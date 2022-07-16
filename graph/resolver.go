@@ -8,4 +8,6 @@ import "example/graph/model"
 
 type Resolver struct {
 	CharacterStore map[string]model.Character
+	//add to my db
+	// DB *sql.DB
  }
