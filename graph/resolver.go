@@ -1,6 +1,9 @@
 package graph
 
-import "example/graph/model"
+import (
+	"database/sql"
+	"example/graph/model"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -9,5 +12,5 @@ import "example/graph/model"
 type Resolver struct {
 	CharacterStore map[string]model.Character
 	//add to my db
-	// DB *sql.DB
+	DB *sql.DB
  }

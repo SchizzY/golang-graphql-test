@@ -17,10 +17,25 @@ func (r *mutationResolver) UpsertCharacter(ctx context.Context, input model.Char
 	var character model.Character
 	character.Name = input.Name
 	character.CliqueType = input.CliqueType
+	
 
-	n := len(r.Resolver.CharacterStore)
-	if n == 0 {
-		r.Resolver.CharacterStore = make(map[string]model.Character)
+	//get a count from the database and scan it to present the data in the graphql response
+	res, err := r.Resolver.DB.Query("SELECT COUNT(*) FROM characters")
+	if err != nil {
+		r.Resolver.DB.Exec("CREATE TABLE characters (id int NOT NULL AUTO_INCREMENT, name varchar(255), is_hero TINYINT,clique_type varchar(255), PRIMARY KEY (id))")
+
+		r.Resolver.DB.Exec("INSERT INTO characters (name, is_hero, clique_type) VALUES (?, ?, ?)", character.Name, character.IsHero, character.CliqueType)
+		return &character, nil
+	}
+	var count int
+	res.Next()
+	res.Scan(&count)
+	character.ID = strconv.Itoa(count + 1)
+
+	
+	// n := len(r.Resolver.CharacterStore)
+	if count == 0 {
+		fmt.Println(r.Resolver.DB.Exec("INSERT INTO characters (name, is_hero, clique_type) VALUES (?, ?, ?)", character.Name, character.IsHero, character.CliqueType))
 	}
 
 	if id != nil {
@@ -35,36 +50,40 @@ func (r *mutationResolver) UpsertCharacter(ctx context.Context, input model.Char
 		}
 		r.Resolver.CharacterStore[*id] = character
 	} else {
-		// generate unique id
-		nid := strconv.Itoa(n + 1)
-		character.ID = nid
 		if input.IsHero != nil {
 			character.IsHero = *input.IsHero
 		}
-		r.Resolver.CharacterStore[nid] = character
+
 	}
+
+	r.Resolver.DB.Query("INSERT INTO characters (id, name, is_hero, clique_type) VALUES (?, ?, ?, ?)", character.ID, character.Name, character.IsHero, character.CliqueType)
 
 	return &character, nil
 }
 
 // Character is the resolver for the character field.
 func (r *queryResolver) Character(ctx context.Context, id string) (*model.Character, error) {
-	character, ok := r.Resolver.CharacterStore[id]
-	if !ok {
+	res, err := r.Resolver.DB.Query("SELECT * FROM characters WHERE id = ?", id)
+	if err != nil {
 		return nil, fmt.Errorf("not found")
 	}
+	var character model.Character
+	res.Next()
+	res.Scan(&character.ID, &character.Name, &character.IsHero, &character.CliqueType)
 	return &character, nil
 }
 
 // Characters is the resolver for the characters field.
 func (r *queryResolver) Characters(ctx context.Context, cliqueType model.CliqueType) ([]*model.Character, error) {
-	characters := make([]*model.Character, 0)
-	for idx := range r.Resolver.CharacterStore {
-		character := r.Resolver.CharacterStore[idx]
-		if character.CliqueType == cliqueType {
-
-			characters = append(characters, &character)
-		}
+	res, err := r.Resolver.DB.Query("SELECT * FROM characters WHERE clique_type = ?", cliqueType)
+	if err != nil {
+		return nil, fmt.Errorf("not found")
+	}
+	var characters []*model.Character
+	for res.Next() {
+		var character model.Character
+		res.Scan(&character.ID, &character.Name, &character.IsHero, &character.CliqueType)
+		characters = append(characters, &character)
 	}
 
 	return characters, nil
