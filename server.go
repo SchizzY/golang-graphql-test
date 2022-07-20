@@ -12,6 +12,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 const defaultPort = "8080"
@@ -33,12 +34,18 @@ func CORS(h http.Handler) http.Handler {
 }
 
 func GetDatabase() (*sql.DB, error) {
-	db, err := sql.Open("mysql", "nadwweoxub69:pscale_pw_9Njo_AHrVMFYRiBh9OA7ZvL8ox7yJYHn8n_jKtwe_sY@tcp(vyw1gzfhau2z.eu-central-1.psdb.cloud)/apollo-test?tls=true")
+	db, err := sql.Open("mysql", os.Getenv("DSN"))
 	return db, err
   }
 
 func main() {
+	err := godotenv.Load("local.env")
+	if err != nil {
+		log.Fatalf("Some error occured. Err: %s", err)
+	}
+
 	port := os.Getenv("PORT")
+
 	if port == "" {
 		port = defaultPort
 	}
