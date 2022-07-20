@@ -12,7 +12,6 @@ import (
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 )
 
 const defaultPort = "8080"
@@ -39,10 +38,10 @@ func GetDatabase() (*sql.DB, error) {
   }
 
 func main() {
-	err := godotenv.Load("local.env")
-	if err != nil {
-		log.Fatalf("Some error occured. Err: %s", err)
-	}
+	// err := godotenv.Load("local.env")
+	// if err != nil {
+	// 	log.Fatalf("Some error occured. Err: %s", err)
+	// }
 
 	port := os.Getenv("PORT")
 
