@@ -56,7 +56,7 @@ func (r *mutationResolver) UpsertCharacter(ctx context.Context, input model.Char
 
 	}
 
-	r.Resolver.DB.Query("INSERT INTO characters (id, name, is_hero, clique_type) VALUES (?, ?, ?, ?)", character.ID, character.Name, character.IsHero, character.CliqueType)
+	fmt.Println(r.Resolver.DB.Query("INSERT INTO characters (id, name, is_hero, clique_type) VALUES (?, ?, ?, ?)", character.ID, character.Name, character.IsHero, character.CliqueType))
 
 	return &character, nil
 }
