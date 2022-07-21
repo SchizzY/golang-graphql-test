@@ -30,7 +30,8 @@ func (r *mutationResolver) UpsertCharacter(ctx context.Context, input model.Char
 	var count int
 	res.Next()
 	res.Scan(&count)
-	character.ID = strconv.Itoa(count + 1)
+	var idCount = count + 1
+	character.ID = strconv.Itoa(idCount + 1)
 
 	
 	// n := len(r.Resolver.CharacterStore)
@@ -56,7 +57,7 @@ func (r *mutationResolver) UpsertCharacter(ctx context.Context, input model.Char
 
 	}
 
-	fmt.Println(r.Resolver.DB.Query("INSERT INTO characters (id, name, is_hero, clique_type) VALUES (?, ?, ?, ?)", character.ID, character.Name, character.IsHero, character.CliqueType))
+	r.Resolver.DB.Query("INSERT INTO characters (id, name, is_hero, clique_type) VALUES (?, ?, ?, ?)", character.ID, character.Name, character.IsHero, character.CliqueType)
 
 	return &character, nil
 }
